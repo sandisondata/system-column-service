@@ -103,32 +103,26 @@ const create = (query, createData) => __awaiter(void 0, void 0, void 0, function
     const table = yield tableService.findOne(query, {
         uuid: createData.table_uuid,
     });
+    if (!Object.values(DataType).includes(createData.column_type)) {
+        throw new Error('column_type is invalid');
+    }
     let foreignKeyTable;
     let lookup;
     if (createData.column_type == ColumnType.BASE) {
         null;
     }
     else if (createData.column_type == ColumnType.FOREIGN_KEY) {
-        if (typeof createData.foreign_key_table_uuid !== 'undefined' &&
-            createData.foreign_key_table_uuid !== null) {
-            foreignKeyTable = yield tableService.findOne(query, {
-                uuid: createData.foreign_key_table_uuid,
-            });
-        }
+        foreignKeyTable = yield tableService.findOne(query, {
+            uuid: createData.foreign_key_table_uuid,
+        });
     }
     else if (createData.column_type == ColumnType.LOOKUP) {
-        if (typeof createData.lookup_uuid !== 'undefined' &&
-            createData.lookup_uuid !== null) {
-            lookup = yield lookupService.findOne(query, {
-                uuid: createData.lookup_uuid,
-            });
-        }
+        lookup = yield lookupService.findOne(query, {
+            uuid: createData.lookup_uuid,
+        });
     }
     else if (createData.column_type == ColumnType.URL) {
         null;
-    }
-    else {
-        throw new Error('column_type is invalid');
     }
     debug.write(node_debug_1.MessageType.Step, 'Creating row...');
     const row = (yield (0, database_helpers_1.createRow)(query, tableName, createData));

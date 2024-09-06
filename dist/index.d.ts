@@ -57,6 +57,6 @@ export type UpdateData = Partial<Data>;
 export type UpdatedRow = Row;
 export declare const create: (query: Query, createData: CreateData) => Promise<CreatedRow<true> | CreatedRow<ColumnType.FOREIGN_KEY> | CreatedRow<ColumnType.LOOKUP>>;
 export declare const find: (query: Query) => Promise<Row<false>[]>;
-export declare const findOne: (query: Query, primaryKey: Required<PrimaryKey>) => Promise<Row<false>>;
+export declare const findOne: (query: Query, primaryKey: PrimaryKey) => Promise<Row<false>>;
 export declare const update: (query: Query, primaryKey: PrimaryKey, updateData: UpdateData) => Promise<UpdatedRow>;
 export declare const delete_: (query: Query, primaryKey: PrimaryKey) => Promise<void>;

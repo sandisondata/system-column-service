@@ -130,32 +130,23 @@ export const create = async (
   const table = await tableService.findOne(query, {
     uuid: createData.table_uuid,
   });
+  if (!Object.values<string>(DataType).includes(createData.column_type)) {
+    throw new Error('column_type is invalid');
+  }
   let foreignKeyTable: tableService.Row;
   let lookup: lookupService.Row;
   if (createData.column_type == ColumnType.BASE) {
     null;
   } else if (createData.column_type == ColumnType.FOREIGN_KEY) {
-    if (
-      typeof createData.foreign_key_table_uuid !== 'undefined' &&
-      createData.foreign_key_table_uuid !== null
-    ) {
-      foreignKeyTable = await tableService.findOne(query, {
-        uuid: createData.foreign_key_table_uuid,
-      });
-    }
+    foreignKeyTable = await tableService.findOne(query, {
+      uuid: createData.foreign_key_table_uuid!,
+    });
   } else if (createData.column_type == ColumnType.LOOKUP) {
-    if (
-      typeof createData.lookup_uuid !== 'undefined' &&
-      createData.lookup_uuid !== null
-    ) {
-      lookup = await lookupService.findOne(query, {
-        uuid: createData.lookup_uuid,
-      });
-    }
+    lookup = await lookupService.findOne(query, {
+      uuid: createData.lookup_uuid!,
+    });
   } else if (createData.column_type == ColumnType.URL) {
     null;
-  } else {
-    throw new Error('column_type is invalid');
   }
   debug.write(MessageType.Step, 'Creating row...');
   const row = (await createRow(query, tableName, createData)) as Row;
@@ -219,10 +210,7 @@ export const find = async (query: Query) => {
   return rows;
 };
 
-export const findOne = async (
-  query: Query,
-  primaryKey: Required<PrimaryKey>,
-) => {
+export const findOne = async (query: Query, primaryKey: PrimaryKey) => {
   const debug = new Debug(`${debugSource}.findOne`);
   debug.write(MessageType.Entry, `primaryKey=${JSON.stringify(primaryKey)}`);
   debug.write(MessageType.Step, 'Finding row by primary key...');
