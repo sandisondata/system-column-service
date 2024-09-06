@@ -23,17 +23,17 @@ export declare enum DataType {
 export type PrimaryKey = {
     uuid: string;
 };
-export type Data<Populate extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false> = (Populate extends false ? {
+export type Data<Populated extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false> = (Populated extends false ? {
     table_uuid: string;
 } : {
     table: tableService.Row;
 }) & {
     column_type: string;
-} & (Populate extends ColumnType.FOREIGN_KEY ? {
+} & (Populated extends ColumnType.FOREIGN_KEY ? {
     foreign_key_table: tableService.Row;
 } : {
     foreign_key_table_uuid?: string | null;
-}) & (Populate extends ColumnType.LOOKUP ? {
+}) & (Populated extends ColumnType.LOOKUP ? {
     lookup: lookupService.Row;
 } : {
     lookup_uuid?: string | null;
@@ -51,8 +51,8 @@ export type System = {
     position_in_unique_key: number | null;
 };
 export type CreateData = Partial<PrimaryKey> & Data;
-export type CreatedRow<Populate extends true | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP> = Row<Populate>;
-export type Row<Populate extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false> = PrimaryKey & Required<Data<Populate>> & System;
+export type CreatedRow<Populated extends true | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP> = Row<Populated>;
+export type Row<Populated extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false> = PrimaryKey & Required<Data<Populated>> & System;
 export type UpdateData = Partial<Data>;
 export type UpdatedRow = Row;
 export declare const create: (query: Query, createData: CreateData) => Promise<CreatedRow<true> | CreatedRow<ColumnType.FOREIGN_KEY> | CreatedRow<ColumnType.LOOKUP>>;

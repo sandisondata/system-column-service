@@ -66,15 +66,18 @@ export type PrimaryKey = {
 };
 
 export type Data<
-  Populate extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false,
-> = (Populate extends false
+  Populated extends
+    | boolean
+    | ColumnType.FOREIGN_KEY
+    | ColumnType.LOOKUP = false,
+> = (Populated extends false
   ? { table_uuid: string }
   : { table: tableService.Row }) & {
   column_type: string;
-} & (Populate extends ColumnType.FOREIGN_KEY
+} & (Populated extends ColumnType.FOREIGN_KEY
     ? { foreign_key_table: tableService.Row }
     : { foreign_key_table_uuid?: string | null }) &
-  (Populate extends ColumnType.LOOKUP
+  (Populated extends ColumnType.LOOKUP
     ? { lookup: lookupService.Row }
     : { lookup_uuid?: string | null }) & {
     name_qualifier?: string | null;
@@ -93,12 +96,15 @@ export type System = {
 
 export type CreateData = Partial<PrimaryKey> & Data;
 export type CreatedRow<
-  Populate extends true | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP,
-> = Row<Populate>;
+  Populated extends true | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP,
+> = Row<Populated>;
 
 export type Row<
-  Populate extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false,
-> = PrimaryKey & Required<Data<Populate>> & System;
+  Populated extends
+    | boolean
+    | ColumnType.FOREIGN_KEY
+    | ColumnType.LOOKUP = false,
+> = PrimaryKey & Required<Data<Populated>> & System;
 
 export type UpdateData = Partial<Data>;
 export type UpdatedRow = Row;
