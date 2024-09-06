@@ -1,0 +1,41 @@
+{
+  "name": "repository-column-service",
+  "version": "1.0.0",
+  "description": "Structured Data Repository - Column Service",
+  "author": "Grant Fortington",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "test": "rimraf --glob \"test/**/*.js\" && tsc -p tsconfig-test.json && node --env-file .test.env --test"
+  },
+  "dependencies": {
+    "database": "github:sandisondata/database",
+    "database-helpers": "github:sandisondata/database-helpers",
+    "node-debug": "github:gwfortington/node-debug",
+    "node-errors": "github:gwfortington/node-errors",
+    "node-utilities": "github:gwfortington/node-utilities",
+    "repository-lookup-service": "github:sandisondata/repository-lookup-service",
+    "repository-table-service": "github:sandisondata/repository-table-service"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.6",
+    "@types/node": "^22.2.0",
+    "@types/pg": "^8.11.6",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.3.2",
+    "rimraf": "^6.0.0"
+  },
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}
