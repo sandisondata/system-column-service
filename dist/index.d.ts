@@ -1,43 +1,12 @@
 import { Query } from 'database';
-import * as lookupService from 'repository-lookup-service';
-import * as tableService from 'repository-table-service';
-export declare enum ColumnType {
-    BASE = "base",
-    FOREIGN_KEY = "foreign-key",
-    LOOKUP = "lookup",
-    URL = "url"
-}
-export declare enum DataType {
-    VARCHAR = "varchar",
-    TEXT = "text",
-    SMALLINT = "smallint",
-    INTEGER = "integer",
-    BIGINT = "bigint",
-    DECIMAL = "decimal",
-    DATE = "date",
-    TIME = "time",
-    TIMESTAMP = "timestamp",
-    TIMESTAMPTZ = "timestamptz",
-    BOOLEAN = "boolean"
-}
 export type PrimaryKey = {
     uuid: string;
 };
-export type Data<Populated extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false> = (Populated extends false ? {
+export type Data = {
     table_uuid: string;
-} : {
-    table: tableService.Row;
-}) & {
     column_type: string;
-} & (Populated extends ColumnType.FOREIGN_KEY ? {
-    foreign_key_table: tableService.Row;
-} : {
     foreign_key_table_uuid?: string | null;
-}) & (Populated extends ColumnType.LOOKUP ? {
-    lookup: lookupService.Row;
-} : {
     lookup_uuid?: string | null;
-}) & {
     name_qualifier?: string | null;
     name: string;
     data_type: string;
@@ -51,12 +20,10 @@ export type System = {
     position_in_unique_key: number | null;
 };
 export type CreateData = Partial<PrimaryKey> & Data;
-export type CreatedRow<Populated extends true | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP> = Row<Populated>;
-export type Row<Populated extends boolean | ColumnType.FOREIGN_KEY | ColumnType.LOOKUP = false> = PrimaryKey & Required<Data<Populated>> & System;
+export type Row = PrimaryKey & Required<Data> & System;
 export type UpdateData = Partial<Data>;
-export type UpdatedRow = Row;
-export declare const create: (query: Query, createData: CreateData) => Promise<CreatedRow<true> | CreatedRow<ColumnType.FOREIGN_KEY> | CreatedRow<ColumnType.LOOKUP>>;
-export declare const find: (query: Query) => Promise<Row<false>[]>;
-export declare const findOne: (query: Query, primaryKey: PrimaryKey) => Promise<Row<false>>;
-export declare const update: (query: Query, primaryKey: PrimaryKey, updateData: UpdateData) => Promise<UpdatedRow>;
+export declare const create: (query: Query, createData: CreateData) => Promise<Row>;
+export declare const find: (query: Query) => Promise<Row[]>;
+export declare const findOne: (query: Query, primaryKey: PrimaryKey) => Promise<Row>;
+export declare const update: (query: Query, primaryKey: PrimaryKey, updateData: UpdateData) => Promise<Row>;
 export declare const delete_: (query: Query, primaryKey: PrimaryKey) => Promise<void>;
