@@ -6,6 +6,8 @@ import { Row as Lookup, service as lookupService } from 'system-lookup-service';
 import { Row as Table, service as tableService } from 'system-table-service';
 
 let table: Table;
+let foreignKeyTable: Table;
+let lookup: Lookup;
 
 const checkNameNotReserved = (name: string) => {
   if (
@@ -39,13 +41,13 @@ const checkNameMatchesExpected = (
     (<string[]>[ColumnType.ForeignKey, ColumnType.Lookup]).includes(columnType)
   ) {
     const expectedName =
-      (nameQualifier !== null ? `${nameQualifier}_` : '') +
+      (nameQualifier != null ? `${nameQualifier}_` : '') +
         `${referencingInstanceName}_` +
         columnType ==
       ColumnType.ForeignKey
         ? 'id'
         : 'lookup_code';
-    if (name !== expectedName) {
+    if (name != expectedName) {
       throw new BadRequestError(`name must be set to "${expectedName}"`);
     }
   }
@@ -61,7 +63,7 @@ enum DataType {
   Date = 'date',
   Time = 'time',
   Timestamp = 'timestamp',
-  TimestampTZ = 'timestamp-tz',
+  TimestampTZ = 'timestamptz',
   Boolean = 'boolean',
 }
 
@@ -70,7 +72,7 @@ const checkDataType = (
   lengthOrPrecision: number | null,
   scale: number | null,
 ) => {
-  if (dataType == DataType.Varchar || dataType == DataType.Decimal) {
+  if ((<string[]>[DataType.Varchar, DataType.Decimal]).includes(dataType)) {
     if (lengthOrPrecision == null) {
       throw new BadRequestError('length_or_precision cannot be null');
     }
@@ -96,11 +98,11 @@ const checkDataType = (
       }
     }
   } else {
-    if (lengthOrPrecision !== null) {
+    if (lengthOrPrecision != null) {
       throw new BadRequestError('length_or_precision must be null');
     }
   }
-  if (dataType !== DataType.Decimal && scale !== null) {
+  if (dataType != DataType.Decimal && scale != null) {
     throw new BadRequestError('scale must be null');
   }
 };
@@ -155,25 +157,23 @@ export class Service extends BaseService<
       throw new BadRequestError('column_type is invalid');
     }
     if (
-      this.createData.column_type !== ColumnType.ForeignKey &&
-      typeof this.createData.foreign_key_table_uuid !== 'undefined' &&
-      this.createData.foreign_key_table_uuid !== null
+      this.createData.column_type != ColumnType.ForeignKey &&
+      typeof this.createData.foreign_key_table_uuid != 'undefined' &&
+      this.createData.foreign_key_table_uuid != null
     ) {
       throw new BadRequestError(
         'foreign_key_table_uuid is not required or must be set to null',
       );
     }
     if (
-      this.createData.column_type !== ColumnType.Lookup &&
-      typeof this.createData.lookup_uuid !== 'undefined' &&
-      this.createData.lookup_uuid !== null
+      this.createData.column_type != ColumnType.Lookup &&
+      typeof this.createData.lookup_uuid != 'undefined' &&
+      this.createData.lookup_uuid != null
     ) {
       throw new BadRequestError(
         'lookup_uuid is not required or must be set to null',
       );
     }
-    let foreignKeyTable: Table;
-    let lookup: Lookup;
     if (this.createData.column_type == ColumnType.ForeignKey) {
       if (typeof this.createData.foreign_key_table_uuid == 'undefined') {
         throw new BadRequestError('foreign_key_table_uuid is required');
@@ -202,8 +202,8 @@ export class Service extends BaseService<
       )
     ) {
       if (
-        typeof this.createData.name_qualifier !== 'undefined' &&
-        this.createData.name_qualifier !== null
+        typeof this.createData.name_qualifier != 'undefined' &&
+        this.createData.name_qualifier != null
       ) {
         throw new BadRequestError(
           'name_qualifier is not required or must be set to null',
@@ -236,7 +236,7 @@ export class Service extends BaseService<
       this.createData.length_or_precision || null,
       this.createData.scale || null,
     );
-    // Check is_not_null & initial_value here against (non-)existing data
+    // TODO: Check is_not_null & initial_value here against (non-)existing data
     this.system.position_number = table.column_count + 1;
     debug.write(MessageType.Exit);
   }
@@ -244,6 +244,7 @@ export class Service extends BaseService<
   async preUpdate() {
     const debug = new Debug(`${this.debugSource}.preUpdate`);
     debug.write(MessageType.Entry);
+    // TODO: Check if updatable and data type change compatibility
     debug.write(MessageType.Exit);
   }
 
@@ -263,32 +264,48 @@ export class Service extends BaseService<
   async postCreate() {
     const debug = new Debug(`${this.debugSource}.postCreate`);
     debug.write(MessageType.Entry);
-    /* TODO: if not null, add column (nullable), update using initial value, set to not null 
-    const nativeDataType =
-      Object.keys(DataType)[
-        Object.values<string>(DataType).indexOf('varchar')
-      ].toLowerCase();
-              await this._transactionalEntityManager.query(
-                // Should be using queryRunner.addColumn instead?
-                `ALTER TABLE repository_${this._repository.id}.table_${this._table.id} ` +
-                  `ADD COLUMN column_${this._column.id} ${_nativeDataTypeCode}` +
-                  (this._column.is_nullable ? '' : ' NOT NULL')
-              );
-              if (_foreignKeyTable) {
-                const _foreignKeyColumn =
-                  await this._transactionalEntityManager.findOne(Column, {
-                    table_id: _foreignKeyTable.id,
-                    column_name: 'id',
-                  });
-                await this._transactionalEntityManager.query(
-                  // Should be using queryRunner.createForeignKey instead?
-                  `ALTER TABLE repository_${this._repository.id}.table_${this._table.id} ` +
-                    `ADD CONSTRAINT column_${this._column.id} ` +
-                    `FOREIGN KEY (column_${this._column.id}) ` +
-                    `REFERENCES repository_${this._repository.id}.table_${_foreignKeyTable.id} (column_${_foreignKeyColumn.id})`
-                );
-              }
-    */
+    // TODO: if not null, add column (nullable), update using initial value, set to not null
+    debug.write(MessageType.Step, 'Adding column to data table...');
+    const sql =
+      `ALTER TABLE ${table.name} ` +
+      `ADD COLUMN ${this.createdRow.name} ${this.createdRow.data_type}` +
+      ((<string[]>[DataType.Varchar, DataType.Decimal]).includes(
+        this.createdRow.data_type,
+      )
+        ? '(' +
+          this.createdRow.length_or_precision +
+          (this.createdRow.data_type == DataType.Decimal
+            ? `, ${this.createdRow.scale}`
+            : '') +
+          ')'
+        : '') +
+      (this.createdRow.is_not_null ? ' NOT NULL' : '');
+    debug.write(MessageType.Value, `sql=(${sql})`);
+    await this.query(sql);
+    if (
+      (<string[]>[ColumnType.ForeignKey, ColumnType.Lookup]).includes(
+        this.createdRow.column_type,
+      )
+    ) {
+      debug.write(
+        MessageType.Step,
+        'Adding foreign key constraint to data table...',
+      );
+      const sql =
+        `ALTER TABLE ${table.name} ` +
+        `ADD CONSTRAINT "${this.createdRow.uuid}_fk" ` +
+        `FOREIGN KEY (${this.createdRow.name}) ` +
+        'REFERENCES ' +
+        (this.createdRow.column_type == ColumnType.ForeignKey
+          ? foreignKeyTable!.name
+          : lookup!.lookup_type) +
+        ' (' +
+        (this.createdRow.column_type == ColumnType.ForeignKey
+          ? 'id'
+          : 'lookup_code') +
+        ')';
+      debug.write(MessageType.Value, `sql=(${sql})`);
+    }
     debug.write(MessageType.Step, 'Incrementing table column count...');
     await updateRow(
       this.query,
@@ -302,12 +319,24 @@ export class Service extends BaseService<
   async postUpdate() {
     const debug = new Debug(`${this.debugSource}.postUpdate`);
     debug.write(MessageType.Entry);
+    if (this.updatedRow.name != this.row.name) {
+      debug.write(MessageType.Step, 'Renaming column on data table...');
+      const sql =
+        `ALTER TABLE ${table.name} ` +
+        `RENAME COLUMN ${this.row.name} TO ${this.updatedRow.name}`;
+      debug.write(MessageType.Value, `sql=(${sql})`);
+      await this.query(sql);
+    }
     debug.write(MessageType.Exit);
   }
 
   async postDelete() {
     const debug = new Debug(`${this.debugSource}.postDelete`);
     debug.write(MessageType.Entry);
+    debug.write(MessageType.Step, 'Dropping column from data table...');
+    const sql = `ALTER TABLE ${table.name} ` + `DROP COLUMN ${this.row.name}`;
+    debug.write(MessageType.Value, `sql=(${sql})`);
+    await this.query(sql);
     debug.write(MessageType.Step, 'Decrementing table column count...');
     await updateRow(
       this.query,

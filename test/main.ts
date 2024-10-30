@@ -33,6 +33,7 @@ describe('main', (suiteContext) => {
         name: 'name',
         data_type: 'varchar',
         length_or_precision: 30,
+        is_not_null: true,
       });
       uuid = row.uuid;
     });
