@@ -1,7 +1,7 @@
 {
-  "name": "repository-column-service",
+  "name": "system-column-service",
   "version": "1.0.0",
-  "description": "Structured Data Repository - Column Service",
+  "description": "System Column Service",
   "author": "Grant Fortington",
   "private": true,
   "license": "MIT",
@@ -16,15 +16,12 @@
     "database-helpers": "github:sandisondata/database-helpers",
     "node-debug": "github:gwfortington/node-debug",
     "node-errors": "github:gwfortington/node-errors",
-    "node-utilities": "github:gwfortington/node-utilities",
-    "repository-lookup-service": "github:sandisondata/repository-lookup-service",
-    "repository-table-service": "github:sandisondata/repository-table-service"
+    "system-lookup-service": "github:sandisondata/system-lookup-service",
+    "system-table-service": "github:sandisondata/system-table-service"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.6",
     "@types/node": "^22.2.0",
-    "@types/pg": "^8.11.6",
-    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "eslint": "^8.57.0",
